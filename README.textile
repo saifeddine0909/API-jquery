@@ -1,0 +1,53 @@
+h1. jquery-enumerable
+
+The only fully tested, API consistent enumerable plugin for jQuery
+
+h2. Quick start
+
+<pre><code><script src="jquery-1.2.6.js"></script>
+<script src="jquery.enumerable.js"></script></code></pre>
+
+h2. Usage
+
+<pre><code>squares = $([1,2,3]).collect(function () {
+  return this * this;
+} // => [1, 4, 9]
+
+sum = $([1,2,3]).inject(0, function (accumulator) {
+  return accumulator + this;
+} // => 6
+
+// Sum is actually provided as a convenience function
+$([1,2,3]).sum() // => 6</code></pre>
+
+Every function is passed an index parameter
+<pre><code>indexed_squares = $([1,2,3]).collect(function (index) {
+  return [index + 1, this * this];
+} // => [[1, 1], [2, 4], [3, 9]] </code></pre>
+
+The following functions are currently implemented
+<pre><code>collect
+inject
+reject
+select
+all
+any
+sum</code></pre>
+
+h2. Architecture
+
+These notes are for if you plan to extend the library.
+
+Functions are defined in an object hash, which is subsequently used to extend both jQuery's static functions and iterator functions. The function that you define must take the enumerable object as it's first argument, and the callback as its last (for functions that don't need a callback, such as @sum@, this is not required). This function is decorated with some basic error checking (such as ensuring the callback is valid). In code:
+
+<pre><code>var methods = {
+  new_function: function(enumerable, callback) { }
+}
+
+// new_function is automatically wrapped in another function to provide error checking of the arguments
+
+$.extend(methods)    // Creates $.new_function
+$.fn.extend(methods) // Creates $([]).new_function
+</code></pre>
+
+Some test helpers are provided: @expect_result@ and @it_protects_from_invalid_callback@. The ensures an error is raised if an invalid callback function is provided, the former runs the given spec against both the static (@$.new_function@) and iteraton (@$([]).new_function@) version of the function. See the existing suite for examples.
